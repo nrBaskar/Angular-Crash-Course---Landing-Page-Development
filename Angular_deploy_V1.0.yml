@@ -65,7 +65,8 @@
     - name: Kill pm2 service
       command: pm2 kill
     - name: Start service
-      command: pm2 start npm -- start -- --port=4200 --host=0.0.0.0 --prod
+      command: pm2 start npm -- start ./src/index.html --name "{{DOCKER_TAG}}-Service"
       args:
-         chdir: "{{ dest_path }}"
+        chdir: "{{ dest_path }}"
+
 
