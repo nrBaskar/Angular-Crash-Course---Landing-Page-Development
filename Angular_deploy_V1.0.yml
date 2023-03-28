@@ -47,14 +47,15 @@
       yum:
         name: nodejs
         state: present
-    - name: Install required packages
+    - name: Install Angular CLI
       command: sudo npm install -g @angular/cli
-    - name: Install npm installation
-      command: npm install
-    - name: Build an application and serve it locally
-      command: ng serve
-    - name: Install required packages
-      command: cd "{{ dest_path }}"
+    - name: Install Node packages
+      npm:
+        path: "{{ dest_path }}"
+    - name: Build the application
+      command: ng build --configuration=production
+      args:
+        chdir: "{{ dest_path }}"
     - name: Install PM2
       npm: name=pm2 global=yes state=present
     - name: Get Forever's list of running processes
