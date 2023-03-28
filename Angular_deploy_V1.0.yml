@@ -26,17 +26,17 @@
         state: present
     - name: Pull docker image
       docker_image:
-        name: "{{ repo_path }}"
-        tag: "{{ DOCKER_TAG }}"
+        name: nrbaskar/angularcourse
+        tag: "{{DOCKER_TAG}}"
         source: pull
     - name: create directory
       file:
         state: directory
-        dest: "{{ dest_path }}"
+        dest: "{{dest_path}}"
     - name: copy website to the host
       copy:
         src: ./
-        dest: "{{ dest_path }}"
+        dest: "{{dest_path}}"
     # Install NodeJS library
     # using multiple shell commands
     - name: Install Nodejs & AngularJS
@@ -58,13 +58,13 @@
         chdir: "{{ dest_path }}"
     - name: Install PM2
       npm: name=pm2 global=yes state=present
-    - name: Get PM2's list of running processes
+    - name: Get Forever's list of running processes
       command: pm2 status
       register: pm2_status
       changed_when: false
-    - name: Kill PM2 service
+    - name: Kill pm2 service
       command: pm2 kill
     - name: Start service
-      command: pm2 start npm -- start ./src/index.html --name "{{DOCKER_TAG}}-Service"
+      command: pm2 start npm -- start ./src/index.html --name "{{DOCKER_TAG}}-Service" -- --port 4200
       args:
         chdir: "{{ dest_path }}"
