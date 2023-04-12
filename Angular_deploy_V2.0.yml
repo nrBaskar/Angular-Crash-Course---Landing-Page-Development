@@ -37,32 +37,34 @@
       copy:
         src: ./
         dest: "{{dest_path}}"
-    - name: Install Node.js
+    # Install NodeJS library
+    # using multiple shell commands
+    - name: Install Nodejs & AngularJS
+      shell: 'curl --silent --location https://rpm.nodesource.com/setup_16.x | bash -'
+    # If other package are required mention the package name in "name"
+    # eg: ngix, curl, wget, apache2, nodejs
+    - name: Install required packages
       yum:
         name: nodejs
         state: present
     - name: Install Angular CLI
+      command: sudo npm install -g @angular/cli
+    - name: Install Node packages
       npm:
-        name: '@angular/cli'
-        state: present
-        global: yes
-    - name: Install project dependencies
-      command: npm install
-      args:
-        chdir: "{{ dest_path }}"
-    - name: Build Angular application
-      command: ng build --prod
+        path: "{{ dest_path }}"
+    - name: Build the application
+      command: ng build --configuration=production
       args:
         chdir: "{{ dest_path }}"
     - name: Install PM2
-      npm:
-        name: pm2
-        state: present
-        global: yes
-    - name: Stop existing PM2 service
-      command: pm2 delete all
-      ignore_errors: yes
-    - name: Start PM2 service
+      npm: name=pm2 global=yes state=present
+    - name: Get Forever's list of running processes
+      command: pm2 status
+      register: pm2_status
+      changed_when: false
+    - name: Kill pm2 service
+      command: pm2 kill
+    - name: Start service
       command: pm2 start npm --name "angulardemo12apr23" --start ./src/index.html --name "{{DOCKER_TAG}}-Service"
       args:
-        chdir: "{{ dest_path }}/dist"
+        chdir: "{{ dest_path }}"
