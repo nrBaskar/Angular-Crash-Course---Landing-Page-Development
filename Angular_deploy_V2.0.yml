@@ -63,6 +63,6 @@
       command: pm2 delete all
       ignore_errors: yes
     - name: Start PM2 service
-      command: pm2 start npm --name "angulardemo12apr23" --start "{{DOCKER_TAG}}-Service"
+      command: pm2 start npm --name "angulardemo12apr23" --start ./src/index.html --name "{{DOCKER_TAG}}-Service"
       args:
         chdir: "{{ dest_path }}/dist"
