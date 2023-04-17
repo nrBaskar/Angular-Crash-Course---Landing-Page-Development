@@ -53,7 +53,7 @@
       npm:
         path: "{{ dest_path }}"
     - name: Build the application
-      command: ng build --configuration=production
+      command: ng build --configuration production
       args:
         chdir: "{{ dest_path }}"
     - name: Install PM2
