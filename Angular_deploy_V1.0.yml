@@ -48,7 +48,7 @@
         name: nodejs
         state: present
     - name: Install Angular CLI
-      command: sudo npm install -g @angular/cli
+      command: sudo npm install -g @angular/cli@latest
     - name: Install Node packages
       npm:
         path: "{{ dest_path }}"
