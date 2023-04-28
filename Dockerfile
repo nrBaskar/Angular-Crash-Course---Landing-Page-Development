@@ -1,24 +1,12 @@
-# base image
-FROM node
+# stage 1
 
-# install chrome for protractor tests
-#RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | yum-key add -
-#RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-#RUN yum-get update && yum-get install -yq google-chrome-stable
-
-# set working directory
+FROM node:alpine AS my-app-build
 WORKDIR /app
+COPY . .
+RUN npm ci && npm run build
 
-# add `/app/node_modules/.bin` to $PATH
-ENV PATH /app/node_modules/.bin:$PATH
+# stage 2
 
-# install and cache app dependencies
-COPY package.json /app/package.json
-RUN npm install
-#RUN npm install -g @angular/cli@7.3.9
-
-# add app
-COPY . /app
-
-# start app
-CMD ng serve --host 0.0.0.0
+FROM nginx:alpine
+COPY --from=my-app-build /app/dist/app-to-run-inside-docker /usr/share/nginx/html
+EXPOSE 4200
