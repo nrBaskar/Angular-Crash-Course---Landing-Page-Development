@@ -1,11 +1,11 @@
----
 - name: Staging server Deployment
   hosts: stageserver
   become_user: root
   become: true
   vars:
-    repo_path: nrbaskar/angularcourse:{{DOCKER_TAG}}
-    dest_path: /home/ec2-user/{{DOCKER_TAG}}
+    repo_path: nrbaskar/angularcourse:{{ DOCKER_TAG }}
+    dest_path: /home/ec2-user/{{ DOCKER_TAG }}
+    app_name: angular-crash-course
   tasks:
     - name: Install python pip
       yum:
@@ -27,22 +27,18 @@
     - name: Pull docker image
       docker_image:
         name: nrbaskar/angularcourse
-        tag: "{{DOCKER_TAG}}"
+        tag: "{{ DOCKER_TAG }}"
         source: pull
     - name: create directory
       file:
         state: directory
-        dest: "{{dest_path}}"
+        dest: "{{ dest_path }}"
     - name: copy website to the host
       copy:
         src: ./
-        dest: "{{dest_path}}"
-    # Install NodeJS library
-    # using multiple shell commands
+        dest: "{{ dest_path }}"
     - name: Install Nodejs & AngularJS
       shell: 'curl --silent --location https://rpm.nodesource.com/setup_16.x | bash -'
-    # If other package are required mention the package name in "name"
-    # eg: ngix, curl, wget, apache2, nodejs
     - name: Install required packages
       yum:
         name: nodejs
@@ -62,13 +58,9 @@
         chdir: "{{ dest_path }}"
     - name: Install PM2
       npm: name=pm2 global=yes state=present
-    - name: Get Forever's list of running processes
-      command: pm2 status
-      register: pm2_status
-      changed_when: false
-    - name: Kill pm2 service
-      command: pm2 kill
     - name: Start service
-      pm2 start npm --name "your-service-name" -- start
-      args:
-        chdir: "{{ dest_path }}"
+      pm2:
+        name: "{{angular-crash-course}}"
+        script: "{{ dest_path }}/dist/{{angular-crash-course}}/server/main.js"
+        autorestart: true
+        watch: "{{ dest_path }}/dist/{{angular-crash-course}}"
