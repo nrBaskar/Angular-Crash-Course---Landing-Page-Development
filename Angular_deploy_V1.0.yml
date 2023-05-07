@@ -7,62 +7,94 @@
     repo_path: nrbaskar/angularcourse:{{DOCKER_TAG}}
     dest_path: /home/ec2-user/{{DOCKER_TAG}}
   tasks:
+    # Install required packages
     - name: Install python pip
       yum:
         name: python-pip
         state: present
+
+    # Install docker
     - name: Install docker
       yum:
         name: docker
         state: present
-    - name: start docker
+
+    # Start docker service
+    - name: Start docker service
       service:
         name: docker
         state: started
         enabled: yes
+
+    # Install docker-py python module
     - name: Install docker-py python module
       pip:
         name: docker-py
         state: present
+
+    # Pull docker image
     - name: Pull docker image
       docker_image:
         name: nrbaskar/angularcourse
         tag: "{{DOCKER_TAG}}"
         source: pull
-    - name: create directory
+
+    # Create directory to store website
+    - name: Create directory
       file:
         state: directory
         dest: "{{dest_path}}"
-    - name: copy website to the host
+
+    # Copy website to the host
+    - name: Copy website to the host
       copy:
         src: ./
         dest: "{{dest_path}}"
+
     # Install NodeJS library
-    # using multiple shell commands
-    - name: Install Nodejs & AngularJS
+    - name: Install Nodejs
       shell: 'curl --silent --location https://rpm.nodesource.com/setup_16.x | bash -'
-    # If other package are required mention the package name in "name"
-    # eg: ngix, curl, wget, apache2, nodejs
+
+    # Install required packages
     - name: Install required packages
       yum:
         name: nodejs
         state: present
+
+    # Install project dependencies
     - name: Install project dependencies
       command: npm install
       args:
-        chdir: "{{ dest_path }}"
+        chdir: "{{dest_path}}"
+
+    # Install Angular CLI
     - name: Install Angular CLI
-      command: sudo npm install -g @angular/cli
+      command: npm install -g @angular/cli
+
+    # Install Node packages
     - name: Install Node packages
       npm:
-        path: "{{ dest_path }}"
+        path: "{{dest_path}}"
+
+    # Build the application
     - name: Build the application
       command: ng build --configuration production
       args:
-        chdir: "{{ dest_path }}"
+        chdir: "{{dest_path}}"
+
+    # Install PM2
     - name: Install PM2
-      npm: name=pm2 global=yes state=present
+      npm:
+        name: pm2
+        global: yes
+        state: present
+
+    # Stop running pm2 service
+    - name: Stop running pm2 service
+      command: pm2 kill
+
+    # Start service using PM2
     - name: Start service
       command: pm2 start npm -- start ./src/index.html --name "{{DOCKER_TAG}}-Service"
       args:
-        chdir: "{{ dest_path }}"
+        chdir: "{{dest_path}}"
